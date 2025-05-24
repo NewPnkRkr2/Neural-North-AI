@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural North - AI Concierge Services</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #000000;
+            color: #ffffff;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Premium cursor */
+        * {
+            cursor: none;
+        }
+
+        .cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, rgba(173, 216, 230, 0.8) 0%, rgba(135, 206, 235, 0.4) 100%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease;
+        }
+
+        .cursor.hover {
+            transform: scale(2);
+            background: radial-gradient(circle, rgba(173, 216, 230, 1) 0%, rgba(135, 206, 235, 0.6) 100%);
+        }
+
+        /* Subtle animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(173, 216, 230, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(135, 206, 235, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            padding: 2rem 4rem;
+            transition: all 0.4s ease;
+            border-bottom: 1px solid rgba(173, 216, 230, 0.1);
+        }
+
+        nav.scrolled {
+            padding: 1.5rem 4rem;
+            background: rgba(0, 0, 0, 0.98);
+            border-bottom: 1px solid rgba(173, 216, 230, 0.2);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #ADD8E6;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 3rem;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-weight: 300;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: #ADD8E6;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            width: 0;
+            height: 1px;
+            background: #ADD8E6;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        #home {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            background: 
+                linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(5,5,15,0.9) 100%),
+                url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') center/cover;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            padding: 0 2rem;
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 7rem);
+            font-weight: 100;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            color: #ffffff;
+            opacity: 0;
+            animation: fadeInUp 1.5s ease 0.5s forwards;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            color: rgba(173, 216, 230, 0.9);
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeInUp 1.5s ease 1s forwards;
+        }
+
+        .hero-cta {
+            display: inline-block;
+            padding: 1rem 3rem;
+            background: transparent;
+            border: 1px solid #ADD8E6;
+            color: #ADD8E6;
+            text-decoration: none;
+            font-weight: 300;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.4s ease;
+            opacity: 0;
+            animation: fadeInUp 1.5s ease 1.5s forwards;
+        }
+
+        .hero-cta:hover {
+            background: rgba(173, 216, 230, 0.1);
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Content Sections */
+        section:not(#home) {
+            padding: 8rem 4rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 100;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 4rem;
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .section-content {
+            font-size: 1.1rem;
+            font-weight: 300;
+            line-height: 2;
+            color: rgba(255, 255, 255, 0.8);
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .section-content p {
+            margin-bottom: 2rem;
+        }
+
+        /* About Section Enhancement */
+        #about {
+            background: 
+                linear-gradient(180deg, rgba(5,5,15,0.95) 0%, rgba(0,0,0,0.95) 100%),
+                url('https://images.unsplash.com/photo-1560472354-b33ff0c44a43?q=80&w=2126&auto=format&fit=crop') center/cover;
+            background-attachment: fixed;
+        }
+
+        /* Services Section */
+        #services {
+            background: 
+                linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.98) 100%),
+                url('https://images.unsplash.com/photo-1518186285589-2f7649de83e0?q=80&w=2074&auto=format&fit=crop') center/cover;
+            background-attachment: fixed;
+        }
+
+        .services-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 3rem;
+            margin-top: 6rem;
+        }
+
+        .service-item {
+            background: rgba(173, 216, 230, 0.02);
+            border: 1px solid rgba(173, 216, 230, 0.1);
+            padding: 3rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(173, 216, 230, 0.05), transparent);
+            transition: left 0.6s;
+        }
+
+        .service-item:hover::before {
+            left: 100%;
+        }
+
+        .service-item:hover {
+            border-color: rgba(173, 216, 230, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .service-icon {
+            font-size: 2rem;
+            color: #ADD8E6;
+            margin-bottom: 1.5rem;
+        }
+
+        .service-title {
+            font-size: 1.2rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            color: #ffffff;
+        }
+
+        .service-description {
+            font-size: 0.95rem;
+            font-weight: 300;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Mission Section */
+        #mission {
+            background: 
+                linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(5,5,15,0.95) 100%),
+                url('https://images.unsplash.com/photo-1559136555-9303baea8ebd?q=80&w=2070&auto=format&fit=crop') center/cover;
+            background-attachment: fixed;
+        }
+
+        /* Team Section */
+        #team {
+            background: 
+                linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.98) 100%),
+                url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop') center/cover;
+            background-attachment: fixed;
+        }
+
+        .team-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 4rem;
+            margin-top: 6rem;
+        }
+
+        .team-member {
+            text-align: center;
+            padding: 3rem;
+            background: rgba(173, 216, 230, 0.02);
+            border: 1px solid rgba(173, 216, 230, 0.1);
+            transition: all 0.4s ease;
+        }
+
+        .team-member:hover {
+            border-color: rgba(173, 216, 230, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .team-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(173, 216, 230, 0.2) 0%, rgba(135, 206, 235, 0.1) 100%);
+            margin: 0 auto 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: #ADD8E6;
+            border: 1px solid rgba(173, 216, 230, 0.3);
+        }
+
+        .team-name {
+            font-size: 1.3rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        .team-title {
+            font-size: 0.9rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #ADD8E6;
+            margin-bottom: 1.5rem;
+        }
+
+        .team-description {
+            font-size: 0.95rem;
+            font-weight: 300;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Contact Section */
+        #contact {
+            background: 
+                linear-gradient(180deg, rgba(5,5,15,0.95) 0%, rgba(0,0,0,0.98) 100%),
+                url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop') center/cover;
+            background-attachment: fixed;
+        }
+
+        .contact-form {
+            max-width: 600px;
+            margin: 4rem auto 0;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #ADD8E6;
+            font-weight: 300;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem 0;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(173, 216, 230, 0.3);
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 300;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-bottom-color: #ADD8E6;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .form-submit {
+            display: block;
+            width: 100%;
+            padding: 1.5rem;
+            background: transparent;
+            border: 1px solid #ADD8E6;
+            color: #ADD8E6;
+            font-weight: 300;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.4s ease;
+            margin-top: 2rem;
+        }
+
+        .form-submit:hover {
+            background: rgba(173, 216, 230, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .contact-info {
+            text-align: center;
+            margin-top: 4rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .contact-info p {
+            margin: 0.5rem 0;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            nav {
+                padding: 1.5rem 2rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            section:not(#home) {
+                padding: 4rem 2rem;
+            }
+
+            .hero-title {
+                letter-spacing: 4px;
+            }
+
+            .services-container,
+            .team-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Add visual separator between sections */
+        .visual-accent {
+            position: relative;
+            height: 200px;
+            background: 
+                linear-gradient(45deg, rgba(173, 216, 230, 0.1) 0%, transparent 100%),
+                url('https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=2070&auto=format&fit=crop') center/cover;
+            background-attachment: fixed;
+        }
+
+        .visual-accent::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.8) 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="cursor"></div>
+
+    <nav id="navbar">
+        <div class="nav-container">
+            <div class="logo">Neural North</div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#mission">Mission</a></li>
+                <li><a href="#team">Team</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section id="home">
+        <div class="hero-content">
+            <h1 class="hero-title">Neural North</h1>
+            <p class="hero-subtitle">AI Concierge for Business Excellence</p>
+            <a href="#contact" class="hero-cta">Begin Your Journey</a>
+        </div>
+    </section>
+
+    <section id="about">
+        <h2 class="section-title">About</h2>
+        <div class="section-content">
+            <p>We're not your typical tech consultants. Based in Lake Bluff, Illinois, Neural North was born from a simple realization: AI doesn't have to be scary or complicated. Most businesses know they should be using AI, but they're not sure where to start or how to do it without breaking what already works.</p>
+            
+            <p>That's where we come in. Think of us as your AI sherpa, guiding you up the mountain of technological advancement without any of the scary cliff-hanging moments. We specialize in helping small to mid-sized businesses discover how AI can make their lives easier, their processes smoother, and their bottom line healthier.</p>
+            
+            <p>What makes us different? We actually care about your business staying true to itself. We're not here to replace your team with robots or turn your company into something unrecognizable. Instead, we help you find the sweet spots where AI makes sense, fits naturally, and amplifies what you already do well.</p>
+            
+            <p>Here's our secret sauce: we bring over 50 years of combined business experience across Manufacturing, Operations, Sales, Marketing, and Finance to every project. Before we even think about AI solutions, we dive deep into understanding your actual business challenges. This isn't about forcing technology into your world – it's about using our business expertise to identify the real problems, then crafting AI solutions that are tailored specifically to how your business actually works.</p>
+        </div>
+    </section>
+
+    <div class="visual-accent"></div>
+
+    <section id="services">
+        <h2 class="section-title">Services</h2>
+        <div class="services-container">
+            <div class="service-item">
+                <div class="service-icon">⚡</div>
+                <h3 class="service-title">AI Strategy & Planning</h3>
+                <p class="service-description">We help you figure out where AI makes sense for your business. No cookie-cutter solutions, just practical strategies that fit your goals and budget.</p>
+            </div>
+            <div class="service-item">
+                <div class="service-icon">🔄</div>
+                <h3 class="service-title">Process Automation</h3>
+                <p class="service-description">Let's find those repetitive tasks that are eating up your team's time and automate them responsibly. More time for the work that actually matters.</p>
+            </div>
+            <div class="service-item">
+                <div class="service-icon">🎯</div>
+                <h3 class="service-title">Custom AI Solutions</h3>
+                <p class="service-description">Sometimes you need something built just for you. We create tailored AI tools that work seamlessly with your existing systems and workflows.</p>
+            </div>
+            <div class="service-item">
+                <div class="service-icon">📊</div>
+                <h3 class="service-title">Data Intelligence</h3>
+                <p class="service-description">Your data has stories to tell. We help you listen to them and turn insights into actionable business decisions that move the needle.</p>
+            </div>
+            <div class="service-item">
+                <div class="service-icon">🛡️</div>
+                <h3 class="service-title">Responsible AI Implementation</h3>
+                <p class="service-description">AI power comes with responsibility. We ensure your AI solutions are ethical, transparent, and aligned with your company values.</p>
+            </div>
+            <div class="service-item">
+                <div class="service-icon">🎓</div>
+                <h3 class="service-title">Team Training & Support</h3>
+                <p class="service-description">We don't just build and leave. We make sure your team knows how to use, maintain, and get the most out of your new AI capabilities.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="mission">
+        <h2 class="section-title">Mission</h2>
+        <div class="section-content">
+            <p>Here's the thing about AI: it's not magic, and it's not going to solve every problem. But when used thoughtfully, it can be incredibly powerful. Our mission is to bridge the gap between the AI hype and the AI reality.</p>
+            
+            <p>We believe every business deserves to benefit from AI advances, not just the tech giants with unlimited budgets. That means creating solutions that are practical, affordable, and actually useful for real businesses dealing with real challenges.</p>
+            
+            <p>We're committed to responsible AI implementation. That means being transparent about what AI can and can't do, protecting your data and your customers' privacy, and making sure the technology serves your business goals rather than the other way around.</p>
+            
+            <p>Most importantly, we believe AI should enhance human potential, not replace it. Our goal is to free up your team to focus on creativity, strategy, and the kind of personal connections that make businesses truly successful.</p>
+        </div>
+    </section>
+
+    <section id="team">
+        <h2 class="section-title">Team</h2>
+        <div class="section-content">
+            <p>We're a tight-knit partnership of strategists and technologists who genuinely love helping businesses succeed. Our backgrounds span decades of experience across business strategy, operations, and cutting-edge AI implementation.</p>
+        </div>
+        <div class="team-container">
+            <div class="team-member">
+                <div class="team-avatar">RA</div>
+                <h3 class="team-name">Rob Abrahamson</h3>
+                <p class="team-title">Co-Founder, Head Strategy & Solutions Officer</p>
+                <p class="team-description">The business mind behind Neural North. Rob helps companies understand where AI fits in their world and builds strategies that actually work.</p>
+            </div>
+            <div class="team-member">
+                <div class="team-avatar">RG</div>
+                <h3 class="team-name">Ross Graham</h3>
+                <p class="team-title">Co-Founder, Head of Execution & Implementation</p>
+                <p class="team-description">The technical wizard who makes it all happen. Ross ensures every solution we build is solid, scalable, and works seamlessly in the real world.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact">
+        <h2 class="section-title">Contact</h2>
+        <div class="section-content">
+            <p>Ready to explore how AI can work for your business? We'd love to hear about your challenges and goals. No sales pitch, no pressure – just an honest conversation about what's possible.</p>
+        </div>
+        <form class="contact-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="company">Company</label>
+                    <input type="text" id="company" name="company">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="tel" id="phone" name="phone">
+            </div>
+            <div class="form-group">
+                <label for="message">Message</label>
+                <textarea id="message" name="message" rows="5" placeholder="Tell us about your business and what you're hoping to achieve" required></textarea>
+            </div>
+            <button type="submit" class="form-submit">Send Message</button>
+        </form>
+        <div class="contact-info">
+            <p>Based in Lake Bluff, Illinois</p>
+            <p>hello@neuralnorthai.com</p>
+            <p>(555) 123-4567</p>
+        </div>
+    </section>
+
+    <script>
+        // Custom cursor
+        const cursor = document.querySelector('.cursor');
+        const interactiveElements = document.querySelectorAll('a, button, .service-item, .team-member');
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        interactiveElements.forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Form submission
+        document.querySelector('.contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Thanks for your message! We\'ll get back to you soon.');
+        });
+    </script>
+</body>
+</html>
